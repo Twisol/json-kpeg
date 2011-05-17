@@ -1,0 +1,48 @@
+%% name = JsonKpeg::Parser
+%% {
+  require "json-kpeg/escaper"
+  include JsonKpeg::StringEscaper
+  
+  attr_reader :result
+  attr_accessor :strict
+}
+
+
+value = object
+      | array
+      | string
+      | number
+      | "true" { true }
+      | "false" { false }
+      | "null" { nil }
+
+object = "{" - "}" { {} }
+       | "{" - object-body:obj - "}" { obj }
+object-body = object-pair:x (- "," - object-pair)*:xs { Hash[[x].concat(xs)] }
+object-pair = string:k - ":" - value:v { [k, v] }
+
+array = "[" - "]" { [] }
+      | "[" - array-body:arr - "]" { arr }
+array-body = value:x (- "," - value)*:xs { [x].concat(xs) }
+
+string = "\"" <string-char+> "\"" { process_escapes(text) }
+string-char = !/["\\]/ .
+            | "\\" string-char-escape
+string-char-escape = /[\/\"bfnrt]/
+                   | "u" /\d{4}/
+
+number = number-base:b number-exponent:e { b * (10 ** e) }
+       | number-base:b { b }
+number-base = <number-base-whole number-base-frac> { text.to_f }
+            | <number-base-whole> { text.to_i }
+number-base-whole = "0" | /-?[1-9]\d*/ 
+number-base-frac = /\.\d+/
+number-exponent = ("E"|"e") </[+-]?\d+/> { text.to_i }
+
+- = /[ \t]*/
+
+strict-root = object | array
+root = ( &{self.strict} strict-root:v
+       | !{self.strict} value:v
+       )
+     { @result = v }

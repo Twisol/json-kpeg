@@ -1,0 +1,14 @@
+PATH
+  remote: .
+  specs:
+    json-kpeg (0.1.0)
+
+GEM
+  specs:
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  bundler (~> 1.0.0)
+  json-kpeg!
