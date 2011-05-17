@@ -3,7 +3,7 @@ A simple (but complete) JSON parser written using Evan Phoenix's [kpeg](https://
 By default, json-kpeg will accept any valid JSON value as the root value. To enable strict parsing (array
 or object only as root), set `parser.strict = true` before calling `#parse`.
 
-==Example==
+## Example
     require "json-kpeg"
     
     parser = JsonKpeg::Parser.new("[1, 2, 3]")
