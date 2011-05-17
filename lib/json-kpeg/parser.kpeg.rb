@@ -1092,6 +1092,16 @@ class JsonKpeg::Parser
     return _tmp
   end
 
+  # eof = !.
+  def _eof
+    _save = self.pos
+    _tmp = get_byte
+    _tmp = _tmp ? nil : true
+    self.pos = _save
+    set_failed_rule :_eof unless _tmp
+    return _tmp
+  end
+
   # strict-root = (object | array)
   def _strict_hyphen_root
 
@@ -1110,7 +1120,7 @@ class JsonKpeg::Parser
     return _tmp
   end
 
-  # root = (&{self.strict} strict-root:v | !{self.strict} value:v) { @result = v }
+  # root = (&{self.strict} strict-root:v | !{self.strict} value:v) eof { @result = v }
   def _root
 
     _save = self.pos
@@ -1166,6 +1176,11 @@ class JsonKpeg::Parser
         self.pos = _save
         break
       end
+      _tmp = apply(:_eof)
+      unless _tmp
+        self.pos = _save
+        break
+      end
       @result = begin;  @result = v ; end
       _tmp = true
       unless _tmp
@@ -1194,6 +1209,7 @@ class JsonKpeg::Parser
   Rules[:_number_hyphen_base_hyphen_frac] = rule_info("number-base-frac", "/\\.\\d+/")
   Rules[:_number_hyphen_exponent] = rule_info("number-exponent", "(\"E\" | \"e\") < /[+-]?\\d+/ > { text.to_i }")
   Rules[:__hyphen_] = rule_info("-", "/[ \\t]*/")
+  Rules[:_eof] = rule_info("eof", "!.")
   Rules[:_strict_hyphen_root] = rule_info("strict-root", "(object | array)")
-  Rules[:_root] = rule_info("root", "(&{self.strict} strict-root:v | !{self.strict} value:v) { @result = v }")
+  Rules[:_root] = rule_info("root", "(&{self.strict} strict-root:v | !{self.strict} value:v) eof { @result = v }")
 end

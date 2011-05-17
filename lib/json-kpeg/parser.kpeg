@@ -41,8 +41,9 @@ number-exponent = ("E"|"e") </[+-]?\d+/> { text.to_i }
 
 - = /[ \t]*/
 
+eof = !.
 strict-root = object | array
 root = ( &{self.strict} strict-root:v
        | !{self.strict} value:v
-       )
+       ) eof
      { @result = v }
